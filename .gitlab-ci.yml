@@ -67,7 +67,7 @@ publish-build:
   services:
     - docker:dind
   only:
-    - $CI_DEFAULT_BRANCH
+    - main
   before_script:
     - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PUSH_TOKEN"
   script:
