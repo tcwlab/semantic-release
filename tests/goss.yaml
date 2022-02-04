@@ -1,0 +1,13 @@
+file:
+  /usr/local/bin/semantic-release:
+    exists: true
+    filetype: symlink
+command:
+  semantic-release:
+    exit-status: 0
+    exec: "semantic-release -v"
+    stdout:
+      - 19.0.2
+    stderr: []
+    timeout: 10000 # in milliseconds
+    skip: false
