@@ -5,6 +5,8 @@ stages:
 mega-linter:
   stage: test
   image: megalinter/megalinter:v5
+  tags:
+    - docker
   script: ["true"] # if script: ["true"] does not work, you may try ->  script: [ "/bin/bash /entrypoint.sh" ]
   variables:
     # All available variables are described in documentation
@@ -17,9 +19,11 @@ mega-linter:
     expire_in: 1 week
 
 docker-build:
+  stage: build
   # Use the official docker image.
   image: docker:latest
-  stage: build
+  tags:
+    - shell
   services:
     - docker:dind
   before_script:
