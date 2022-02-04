@@ -47,12 +47,12 @@ docker-build:
 
 validate-image:
   stage: test
+  image: ubuntu:lts
   tags:
     - docker
   variables:
     GOSS_FILE: tests/goss.yaml
   script:
-    - apt-get update && apt-get -y install curl
     - curl -L -s "https://github.com/aelsabbahy/goss/releases/download/v0.3.16/goss-linux-amd64" -o /usr/local/bin/goss
     - chmod +rx /usr/local/bin/goss
     - curl -L -s "https://github.com/aelsabbahy/goss/releases/download/v0.3.16/dgoss" -o /usr/local/bin/dgoss
