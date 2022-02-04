@@ -17,6 +17,8 @@ mega-linter:
     paths:
       - report
     expire_in: 1 week
+  except:
+    - main
 
 docker-build:
   stage: build
