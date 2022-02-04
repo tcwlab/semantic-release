@@ -43,9 +43,10 @@ docker-build:
       docker push "$CI_REGISTRY_IMAGE:${tag}"
     - |
       if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
+        DATE_TAG=$(date '+%Y%m%d')
         echo "adding latest tag and publishing to DockerHub"
         docker tag "$CI_REGISTRY_IMAGE:${tag}" "$DOCKERHUB_USERNAME/$CI_PROJECT_NAME:latest"
-        docker tag "$CI_REGISTRY_IMAGE:${tag}" "$DOCKERHUB_USERNAME/$CI_PROJECT_NAME:$(date '+%Y%m%d')"
+        docker tag "$CI_REGISTRY_IMAGE:${tag}" "$DOCKERHUB_USERNAME/$CI_PROJECT_NAME:$DATE_TAG"
         docker push "$DOCKERHUB_USERNAME/$CI_PROJECT_NAME"
       fi
   # Run this job in a branch where a Dockerfile exists
