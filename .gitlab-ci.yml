@@ -52,6 +52,7 @@ validate-image:
   variables:
     GOSS_FILE: tests/goss.yaml
   script:
+    - apk add -U --no-cache bash
     - wget "https://github.com/aelsabbahy/goss/releases/download/v0.3.16/goss-linux-amd64" -O /usr/bin/goss
     - chmod +rx /usr/bin/goss
     - wget "https://github.com/aelsabbahy/goss/releases/download/v0.3.16/dgoss" -O /usr/bin/dgoss
