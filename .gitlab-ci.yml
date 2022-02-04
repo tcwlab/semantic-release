@@ -47,16 +47,14 @@ docker-build:
 
 validate-image:
   stage: test
-  image: ubuntu:latest
   tags:
     - docker
   variables:
     GOSS_FILE: tests/goss.yaml
   script:
-    - apt-get update && apt-get -y install curl
-    - curl -L -s "https://github.com/aelsabbahy/goss/releases/download/v0.3.16/goss-linux-amd64" -o /usr/local/bin/goss
+    - wget "https://github.com/aelsabbahy/goss/releases/download/v0.3.16/goss-linux-amd64" -O /usr/local/bin/goss
     - chmod +rx /usr/local/bin/goss
-    - curl -L -s "https://github.com/aelsabbahy/goss/releases/download/v0.3.16/dgoss" -o /usr/local/bin/dgoss
+    - wget "https://github.com/aelsabbahy/goss/releases/download/v0.3.16/dgoss" -O /usr/local/bin/dgoss
     - chmod +rx /usr/local/bin/dgoss
     - dgoss run -it $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
 
