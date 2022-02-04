@@ -49,7 +49,7 @@ docker-build:
     - |
       tag="$CI_COMMIT_REF_SLUG"
       echo "Running on branch '$CI_COMMIT_BRANCH': tag = $tag"
-      docker build --no-cache -t "$CI_REGISTRY_IMAGE:${tag}" .
+      docker build --no-cache -t "$CI_REGISTRY_IMAGE:${CI_COMMIT_REF_SLUG}" .
     - |
       echo "Pushing image '$CI_REGISTRY_IMAGE${tag}' to gitlab registry"
       docker push "$CI_REGISTRY_IMAGE:${tag}"
@@ -58,7 +58,7 @@ docker-build:
         echo "adding latest tag and publishing to DockerHub"
         docker tag "$CI_REGISTRY_IMAGE:${tag}" "$DOCKERHUB_USERNAME/$CI_PROJECT_NAME:latest"
         docker tag "$CI_REGISTRY_IMAGE:${tag}" "$DOCKERHUB_USERNAME/$CI_PROJECT_NAME:$(date '+%Y%m%d')"
-        docker push "$CI_PROJECT_NAME"
+        docker push "$DOCKERHUB_USERNAME/$CI_PROJECT_NAME"
       fi
   # Run this job in a branch where a Dockerfile exists
   rules:
