@@ -22,7 +22,7 @@ mega-linter:
   # You can override MegaLinter flavor used to have faster performances
   # More info at https://megalinter.github.io/flavors/
   image: megalinter/megalinter:v5
-  script: ["true"] # if script: ["true"] does not work, you may try ->  script: ["/bin/bash /entrypoint.sh"]
+  script: ["/bin/bash /entrypoint.sh"] # if script: ["true"] does not work, you may try ->  script: ["/bin/bash /entrypoint.sh"]
   variables:
     # All available variables are described in documentation
     # https://megalinter.github.io/configuration/
@@ -41,6 +41,7 @@ docker-build:
   services:
     - docker:dind
   before_script:
+    -
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
     - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PUSH_TOKEN"
   # Default branch leaves tag empty (= latest tag)
