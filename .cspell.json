@@ -1,0 +1,24 @@
+{
+    "ignorePaths": [
+        "**/node_modules/**",
+        "**/vscode-extension/**",
+        "**/.git/**",
+        ".vscode",
+        "package-lock.json",
+        "report"
+    ],
+    "language": "en",
+    "version": "0.2",
+    "words": [
+        "Asciinema",
+        "Kubernetes",
+        "Roadmap",
+        "SAST",
+        "dind",
+        "makeareadme",
+        "saas",
+        "sast",
+        "tcwlab",
+        "ttygif"
+    ]
+}

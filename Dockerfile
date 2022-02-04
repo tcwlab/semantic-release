@@ -12,8 +12,8 @@ RUN apk add -U --no-cache \
 # STEP 2: install dependencies
 #####
 FROM base AS dependencies
-RUN npm set progress=false && npm config set depth 0
-RUN npm install -g semantic-release @semantic-release/gitlab @semantic-release/exec
+RUN npm set progress=false && npm config set depth 0 && \
+    npm install -g semantic-release @semantic-release/gitlab @semantic-release/exec
 
 #####
 # STEP 3: build production image
