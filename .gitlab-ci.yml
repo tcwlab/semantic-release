@@ -52,10 +52,10 @@ validate-image:
   variables:
     GOSS_FILE: tests/goss.yaml
   script:
-    - wget "https://github.com/aelsabbahy/goss/releases/download/v0.3.16/goss-linux-amd64" -O /usr/local/bin/goss
-    - chmod +rx /usr/local/bin/goss
-    - wget "https://github.com/aelsabbahy/goss/releases/download/v0.3.16/dgoss" -O /usr/local/bin/dgoss
-    - chmod +rx /usr/local/bin/dgoss
+    - wget "https://github.com/aelsabbahy/goss/releases/download/v0.3.16/goss-linux-amd64" -O /usr/bin/goss
+    - chmod +rx /usr/bin/goss
+    - wget "https://github.com/aelsabbahy/goss/releases/download/v0.3.16/dgoss" -O /usr/bin/dgoss
+    - chmod +rx /usr/bin/dgoss
     - dgoss run -it $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
 
 publish-build:
