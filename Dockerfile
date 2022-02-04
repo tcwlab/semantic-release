@@ -1,29 +1,24 @@
 #####
 # STEP 1: build base image
 #####
-FROM alpine:3 AS base
+FROM node:lts-alpine AS base
 RUN apk add -U --no-cache \
-    nodejs-current=17.3.1-r0 \
-    tini=0.19.0-r0 \
-    git=2.34.1-r0	&& \
-    ca-certificates=20211220-r0 && \
-    bash=5.1.8-r0 && \
+    git \
+    ca-certificates \
+    bash && \
     rm -rf /var/cache/apk/*
-# set working directory
-WORKDIR /root/semantic-release
-# Set tini as entrypoint
-ENTRYPOINT ["/sbin/tini", "--"]
 
 #####
 # STEP 2: install dependencies
 #####
 FROM base AS dependencies
 RUN npm set progress=false && npm config set depth 0
-RUN npm install -g semantic-release@17.3.9 @semantic-release/gitlab@6.0.9 @semantic-release/exec@5.0.0
+RUN npm install -g semantic-release @semantic-release/gitlab @semantic-release/exec
 
 #####
 # STEP 3: build production image
 #####
 FROM base AS release
-COPY --from=dependencies /root/semantic-release/node_modules ./node_modules
+COPY --from=dependencies /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s /usr/local/lib/node_modules/semantic-release/bin/semantic-release.js /usr/local/bin/semantic-release
 CMD ["bash"]
