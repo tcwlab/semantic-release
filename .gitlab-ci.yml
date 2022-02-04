@@ -42,6 +42,7 @@ docker-build:
     - docker:dind
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
+    - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PUSH_TOKEN"
   # Default branch leaves tag empty (= latest tag)
   # All other branches are tagged with the escaped branch name (commit ref slug)
   script:
@@ -55,8 +56,9 @@ docker-build:
     - |
       if [[ "$CI_COMMIT_BRANCH" == "$CI_DEFAULT_BRANCH" ]]; then
         echo "adding latest tag and publishing to DockerHub"
-        docker tag "$CI_REGISTRY_IMAGE:${tag}" "$CI_PROJECT_NAME:latest"
-        docker tag "$CI_REGISTRY_IMAGE:${tag}" "$CI_PROJECT_NAME:$(date '+%Y%m%d')"
+        docker tag "$CI_REGISTRY_IMAGE:${tag}" "$DOCKERHUB_USERNAME/$CI_PROJECT_NAME:latest"
+        docker tag "$CI_REGISTRY_IMAGE:${tag}" "$DOCKERHUB_USERNAME/$CI_PROJECT_NAME:$(date '+%Y%m%d')"
+        docker push "$CI_PROJECT_NAME"
       fi
   # Run this job in a branch where a Dockerfile exists
   rules:
