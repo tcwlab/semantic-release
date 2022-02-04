@@ -48,7 +48,9 @@ docker-build:
 validate-image:
   stage: test
   tags:
-    - docker
+    - shell
+  services:
+    - docker:dind
   variables:
     GOSS_FILE: tests/goss.yaml
   script:
