@@ -49,7 +49,7 @@ validate-image:
   stage: test
   image: docker:latest
   tags:
-    - shell
+    - docker
   services:
     - docker:dind
   variables:
