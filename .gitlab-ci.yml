@@ -78,8 +78,3 @@ publish-build:
     - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $DOCKERHUB_USERNAME/$CI_PROJECT_NAME:$DATE_TAG
     - docker push $DOCKERHUB_USERNAME/$CI_PROJECT_NAME:latest
     - docker push $DOCKERHUB_USERNAME/$CI_PROJECT_NAME:$DATE_TAG
-  # Run this job in a branch where a Dockerfile exists
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      exists:
-        - Dockerfile
