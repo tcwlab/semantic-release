@@ -50,6 +50,7 @@ validate-image:
   image: tcwlab/dgoss:latest
   tags:
     - shell
+    - linux
   variables:
     GOSS_FILE: tests/goss.yaml
   script:
