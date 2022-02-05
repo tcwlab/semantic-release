@@ -28,7 +28,8 @@ docker-build:
   # Use the official docker image.
   image: docker:latest
   tags:
-    - shell
+    - docker
+    - linux
   services:
     - docker:dind
   before_script:
@@ -65,7 +66,8 @@ publish-build:
   # Use the official docker image.
   image: docker:latest
   tags:
-    - shell
+    - docker
+    - linux
   services:
     - docker:dind
   only:
