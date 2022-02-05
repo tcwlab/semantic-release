@@ -55,7 +55,8 @@ validate-image:
   services:
     - docker:dind
   variables:
-    GOSS_FILE: tests/goss.yaml
+    GOSS_FILES_PATH: goss
+    GOSS_FILES_STRATEGY: cp
   script:
     - dgoss run -it $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
 
