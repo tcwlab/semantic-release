@@ -49,7 +49,7 @@ validate-image:
   stage: test
   image: tcwlab/dgoss:latest
   tags:
-    - shell
+    - docker
     - linux
   variables:
     GOSS_FILE: tests/goss.yaml
