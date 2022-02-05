@@ -9,6 +9,7 @@ mega-linter:
   image: megalinter/megalinter:v5
   tags:
     - docker
+    - linux
   script: ["true"] # if script: ["true"] does not work, you may try ->  script: [ "/bin/bash /entrypoint.sh" ]
   variables:
     # All available variables are described in documentation
@@ -51,6 +52,8 @@ validate-image:
   tags:
     - docker
     - linux
+  services:
+    - docker:dind
   variables:
     GOSS_FILE: tests/goss.yaml
   script:
