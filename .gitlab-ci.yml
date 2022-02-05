@@ -28,9 +28,8 @@ docker-build:
   # Use the official docker image.
   image: docker:latest
   tags:
-    - shell
-  services:
-    - docker:dind
+    - docker
+    - linux
   before_script:
     - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
   # Default branch leaves tag empty (= latest tag)
@@ -52,8 +51,6 @@ validate-image:
   tags:
     - docker
     - linux
-  services:
-    - docker:dind
   variables:
     GOSS_FILES_PATH: goss
     GOSS_FILES_STRATEGY: cp
@@ -65,9 +62,8 @@ publish-build:
   # Use the official docker image.
   image: docker:latest
   tags:
-    - shell
-  services:
-    - docker:dind
+    - docker
+    - linux
   only:
     - main
   before_script:
