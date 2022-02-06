@@ -55,7 +55,7 @@ semantic-release:
     - tags # because we don't want to build again, once the tag is written
 ```
 
-If you are unsure how to embed, have a look at [this working example]().
+If you are unsure how to embed, have a look at [this working example](https://gitlab.com/tcwlab.com/saas/baseline/images/semantic-release/-/blob/main/.gitlab-ci.yml).
 
 ### Step 2: `.releaserc`
 
@@ -86,9 +86,9 @@ No, it's not just about triggering a pipeline. You also have to do some configur
 
 In order to let `semantic-release` know which credentials to use, you have to generate an Access Token:
 
- - by creating a [project access token](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html)
- - by creating a [group access token](https://docs.gitlab.com/ee/user/group/settings/group_access_tokens.html)
- - by creating a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
+- by creating a [project access token](https://docs.gitlab.com/ee/user/project/settings/project_access_tokens.html)
+- by creating a [group access token](https://docs.gitlab.com/ee/user/group/settings/group_access_tokens.html)
+- by creating a [personal access token](https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html)
 
 > **_ℹ️ Info:_**  Depends on your GitLab tier. Maybe only the personal access token is available for you.
 
@@ -96,9 +96,9 @@ Make your token available as `GITLAB_TOKEN` environment variable ([see also `sem
 
 When you now commit something with these messages, the `semantic-release` will do the rest for you:
 
- - `BREAKING CHANGE [...]` will create a new major release (e.g. 1.2.4 -> 2.0.0)
- - `feat(some-feature): [...]` is treated as feature release (e.g. 1.2.4 -> 1.3.0)
- - `fix(some-bug): [...]` is intended to create a patch release (e.g. 1.2.4 -> 1.2.5)
+- `BREAKING CHANGE [...]` will create a new major release (e.g. 1.2.4 -> 2.0.0)
+- `feat(some-feature): [...]` is treated as feature release (e.g. 1.2.4 -> 1.3.0)
+- `fix(some-bug): [...]` is intended to create a patch release (e.g. 1.2.4 -> 1.2.5)
 
 Of course a lot of things can be adjusted to your needs. For detailed information please have a look at the [official documentation of `semantic-release`](https://semantic-release.gitbook.io/).
 
