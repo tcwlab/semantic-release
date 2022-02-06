@@ -2,7 +2,7 @@ stages:
   - lint
   - build
   - test
-  - publish
+  - release
 
 mega-linter:
   stage: lint
@@ -22,6 +22,7 @@ mega-linter:
     expire_in: 1 week
   except:
     - main
+    - tags
 
 docker-build:
   stage: build
@@ -39,11 +40,9 @@ docker-build:
     - docker build --no-cache -t $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA .
     - echo "Pushing image '$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA' to gitlab registry"
     - docker push "$CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA"
-  # Run this job in a branch where a Dockerfile exists
-  rules:
-    - if: $CI_COMMIT_BRANCH
-      exists:
-        - Dockerfile
+  except:
+    - main
+    - tags
 
 validate-image:
   stage: test
@@ -56,24 +55,20 @@ validate-image:
     GOSS_FILES_STRATEGY: cp
   script:
     - dgoss run -it $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
+  except:
+    - main
+    - tags
 
-publish-build:
-  stage: publish
-  # Use the official docker image.
-  image: docker:latest
+semantic-release:
+  stage: release
+  image: tcwlab/semantic-release:latest
   tags:
     - docker
     - linux
-  only:
-    - main
-  before_script:
-    - docker login -u "$CI_REGISTRY_USER" -p "$CI_REGISTRY_PASSWORD" $CI_REGISTRY
-    - docker login -u "$DOCKERHUB_USERNAME" -p "$DOCKERHUB_PUSH_TOKEN"
   script:
-    - DATE_TAG=$(date '+%Y%m%d')
-    - echo "adding latest tag and publishing to DockerHub"
-    - docker pull $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA
-    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $DOCKERHUB_USERNAME/$CI_PROJECT_NAME:latest
-    - docker tag $CI_REGISTRY_IMAGE:$CI_COMMIT_SHORT_SHA $DOCKERHUB_USERNAME/$CI_PROJECT_NAME:$DATE_TAG
-    - docker push $DOCKERHUB_USERNAME/$CI_PROJECT_NAME:latest
-    - docker push $DOCKERHUB_USERNAME/$CI_PROJECT_NAME:$DATE_TAG
+    - semantic-release
+  only:
+    refs:
+      - main
+  except:
+    - tags
