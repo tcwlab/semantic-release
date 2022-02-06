@@ -6,7 +6,7 @@ stages:
 
 mega-linter:
   stage: lint
-  image: megalinter/megalinter:v5
+  image: megalinter/megalinter:v5@sha256:4b189679ac34fd96b2afb28c746025205004acc4beb9b54b0bdcf2b6bc4f235f
   tags:
     - docker
     - linux
@@ -27,7 +27,7 @@ mega-linter:
 docker-build:
   stage: build
   # Use the official docker image.
-  image: docker:latest
+  image: docker:latest@sha256:a729cce205a05b0b86dc8dca87823efaffc3f74979fe7dc86a707c2fbf631b61
   tags:
     - docker
     - linux
@@ -46,7 +46,7 @@ docker-build:
 
 validate-image:
   stage: test
-  image: tcwlab/dgoss:latest
+  image: tcwlab/dgoss:latest@sha256:b9d7c20bf97cb09ed39e355e18fc60afc2e9258940aaff3df1ff08d1552b9ea3
   tags:
     - docker
     - linux
@@ -61,7 +61,7 @@ validate-image:
 
 semantic-release:
   stage: release
-  image: tcwlab/semantic-release:latest
+  image: tcwlab/semantic-release:latest@sha256:07ff3cfb770bbffb41a1cd1310175286b1d287ebd437efb03ea0e7fef490eed9
   tags:
     - docker
     - linux
