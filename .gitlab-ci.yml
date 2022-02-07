@@ -47,7 +47,7 @@ docker-build:
 
 validate-image:
   stage: test
-  image: tcwlab/dgoss:1.0.1
+  image: tcwlab/dgoss:1.0.1@sha256:6e2d0c94e6f189b85f2b6f0f34c6c95dd2f6fc98b492f8f6a829f7eaf1f86e29
   tags:
     - docker
     - linux
@@ -62,7 +62,7 @@ validate-image:
 
 semantic-release:
   stage: release
-  image: tcwlab/semantic-release:1.1.0
+  image: tcwlab/semantic-release:1.1.0@sha256:db4761a4c97d0532fc342d50dd76355e6de38acad4468c811070a882563dc43e
   tags:
     - docker
     - linux
