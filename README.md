@@ -3,7 +3,7 @@
 [![pipeline status](https://gitlab.com/tcwlab.com/saas/baseline/images/semantic-release/badges/main/pipeline.svg)](https://gitlab.com/tcwlab.com/saas/baseline/images/semantic-release/-/commits/main)
 [![coverage report](https://gitlab.com/tcwlab.com/saas/baseline/images/semantic-release/badges/main/coverage.svg)](https://gitlab.com/tcwlab.com/saas/baseline/images/semantic-release/-/commits/main)
 [![GitHub tag](https://img.shields.io/github/tag/tcwlab/semantic-release)](https://github.com/tcwlab/semantic-release/releases/?include_prereleases&sort=semver "View GitHub releases")
-[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://gitlab.com/tcwlab.com/saas/baseline/images/semantic-release/-/blob/main/LICENSE)
 
 ## tl;dr
 
