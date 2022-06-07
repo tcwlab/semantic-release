@@ -78,8 +78,8 @@ branches:
 
 As you perhaps can imagine, it will do four things on the `main` branch:
 
- 1. Analyse your commit messages to detect changes (if & kind of)
- 2. Generate release notes using the commit analyse result
+ 1. Analyze your commit messages to detect changes (if & kind of)
+ 2. Generate release notes using the commit analyze result
  3. Publish the release to the [Release Notes](https://gitlab.com/tcwlab.com/saas/baseline/images/semantic-release/-/releases) page in GitLab
  4. Create a Git tag with the semantic version you've created
 
