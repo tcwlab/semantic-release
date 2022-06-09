@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "gitlab>tcwlab.com/renovate:default"
+    "gitlab>tcwlab.com/renovate"
   ]
 }
