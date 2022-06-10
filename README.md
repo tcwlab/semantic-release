@@ -124,3 +124,4 @@ We do **not** have a specific dedicated set of people to work on this project.
 It absolutely comes with **no warranty**.
 
 [![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Ftcwlab%2Fsemantic-release.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Ftcwlab%2Fsemantic-release?ref=badge_large)
+
