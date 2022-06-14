@@ -5,9 +5,9 @@ file:
 command:
   semantic-release:
     exit-status: 0
-    exec: "semantic-release -v"
+    exec: "semantic-release -h"
     stdout:
-      - 19.0.2
+      - "--analyze-commits"
     stderr: []
     timeout: 10000 # in milliseconds
     skip: false
