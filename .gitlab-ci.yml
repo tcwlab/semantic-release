@@ -6,7 +6,7 @@ stages:
 
 mega-linter:
   stage: lint
-  image: megalinter/megalinter:v5@sha256:ec2f3d511137d2546e2ceb05bca4114ab4db413ff37614bed228c20e2f2d014d
+  image: megalinter/megalinter:v5@sha256:22d9983dbe386e0f00248aa1e10ec37930706de6d251a5f05aad56c43f902846
   tags:
     - docker
     - linux
