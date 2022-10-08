@@ -47,7 +47,7 @@ docker-build:
 
 validate-image:
   stage: test
-  image: tcwlab/dgoss:1.0.45@sha256:2fd931ce38d281b262026c67f08ed34c1be62fe8df84ed79d4e56cd90b90248e
+  image: tcwlab/dgoss:1.0.46@sha256:2fd931ce38d281b262026c67f08ed34c1be62fe8df84ed79d4e56cd90b90248e
   tags:
     - docker
     - linux
