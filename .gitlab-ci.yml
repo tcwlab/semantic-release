@@ -28,7 +28,7 @@ mega-linter:
 docker-build:
   stage: build
   # Use the official docker image.
-  image: docker:latest@sha256:466edff9fbc8e1326259d04412f55684c2e0f79c574eb9782c252011a87d8046
+  image: docker:latest@sha256:313f03f8946a38f72c45f224efead3b8c6b3a222f83ac323bf7a83e6351044be
   tags:
     - docker
     - linux
