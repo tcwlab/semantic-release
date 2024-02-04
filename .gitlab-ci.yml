@@ -62,7 +62,7 @@ validate-image:
 
 semantic-release:
   stage: release
-  image: tcwlab/semantic-release:1.2.555@sha256:2c6be5c76adea52694b9e65eaada050af3c796031561d29126bfd957b8ad0ef2
+  image: tcwlab/semantic-release:1.2.557@sha256:2c6be5c76adea52694b9e65eaada050af3c796031561d29126bfd957b8ad0ef2
   tags:
     - docker
     - linux
