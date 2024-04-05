@@ -1,7 +1,7 @@
 #####
 # STEP 1: build base image
 #####
-FROM node:lts-alpine@sha256:5352962f5574720de4ce7dab5abcff56095c227f82aeebd86d8cf091ed9fae91 AS base
+FROM node:lts-alpine@sha256:ebdb58b0d966033381e8eda11dad66a70dc22df2e1e36b5050fbd547299addae AS base
 RUN apk add -U --no-cache \
     git \
     ca-certificates \
