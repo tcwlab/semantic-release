@@ -18,7 +18,7 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 RUN apk add -U --no-cache coreutils tar curl
 RUN    export GIT_LFS_VERSION="$(curl -s 'https://api.github.com/repos/git-lfs/git-lfs/releases' | grep 'tag_name' | cut -d '\"' -f 4 | sort -V | grep -v 'rc.' | tail -n 1)"
 RUN    curl -Ls "https://github.com/git-lfs/git-lfs/releases/download/${GIT_LFS_VERSION}/git-lfs-linux-amd64-${GIT_LFS_VERSION}.tar.gz" -o git-lfs.tgz
-RUN    tar xzf ./git-lfs.tgz
+RUN    tar xvf ./git-lfs.tgz
 RUN    mv git-lfs-${GIT_LFS_VERSION}/git-lfs /usr/bin/git-lfs
 RUN    chmod +rx /usr/bin/git-lfs
 RUN npm set progress=false && npm config set depth 0 && \
