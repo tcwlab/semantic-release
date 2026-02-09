@@ -13,8 +13,9 @@ RUN apk add -U --no-cache \
 # STEP 2: install dependencies
 #####
 FROM base AS dependencies
+SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 # This is a workaround for the currently outdated git-lfs in AlpineLinux repos, which is vulnerable to CVE-2025-26625
-RUN apk add -U --no-cache curl && \
+RUN apk add -U --no-cache coreutils curl && \
     export GIT_LFS_VERSION=$(curl -s 'https://api.github.com/repos/git-lfs/git-lfs/releases' | grep 'tag_name' | cut -d '"' -f 4 | sort -V | grep -v 'rc.' | tail -n 1) && \
     curl -Ls "https://github.com/git-lfs/git-lfs/releases/download/${GIT_LFS_VERSION}/git-lfs-linux-amd64-${GIT_LFS_VERSION}.tar.gz" -o git-lfs.tgz && \
     tar xzf git-lfs.tgz && \
