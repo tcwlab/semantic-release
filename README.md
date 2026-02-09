@@ -50,7 +50,7 @@ This is a snippet for your `.gitlab-ci.yml`:
 ```yaml
 semantic-release:
   stage: release
-  image: tcwlab/semantic-release:1.0
+  image: tcwlab/semantic-release:1
   script:
     - semantic-release
   only:
