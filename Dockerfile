@@ -1,7 +1,7 @@
 #####
 # STEP 1: build base image
 #####
-FROM node:current-alpine@sha256:cd6fb7efa6490f039f3471a189214d5f548c11df1ff9e5b181aa49e22c14383e AS base
+FROM node:current-alpine@sha256:c8d96e95e88f08f814af06415db9cfd5ab4ebcdf40721327ff2172ff25cfb997 AS base
 RUN apk add -U --no-cache \
     git \
     git-lfs \
