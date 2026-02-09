@@ -13,7 +13,7 @@ mega-linter:
   script: ["true"] # if script: ["true"] does not work, you may try ->  script: [ "/bin/bash /entrypoint.sh" ]
   variables:
     # All available variables are described in documentation
-    # https://megalinter.github.io/configuration/
+    # https://megalinter.io/latest/configuration/
     DEFAULT_WORKSPACE: $CI_PROJECT_DIR
   artifacts:
     when: always
