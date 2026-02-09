@@ -6,7 +6,7 @@ stages:
 
 mega-linter:
   stage: lint
-  image: megalinter/megalinter:v5@sha256:463763d4a2aa0bf9e0b51663377201ead8c17a0b8e015c9a2c979099366cf868
+  image: oxsecurity/megalinter:v9@sha256:b38439f4563ac9400cd9e1833b428848f66bb0a0f1c531506a701479b80ded24
   tags:
     - docker
     - linux
@@ -28,7 +28,7 @@ mega-linter:
 docker-build:
   stage: build
   # Use the official docker image.
-  image: docker:latest@sha256:c890c327e515cdccd14e593fb5450e4375e791ab0520795948134cb87b45aaa7
+  image: docker:latest@sha256:8bcbad4b45f0bff9d3e809d85a7ac589390f0be8acbc526850c998c35c1243fd
   tags:
     - docker
     - linux
