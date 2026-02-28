@@ -6,7 +6,7 @@ stages:
 
 mega-linter:
   stage: lint
-  image: oxsecurity/megalinter:v9@sha256:b38439f4563ac9400cd9e1833b428848f66bb0a0f1c531506a701479b80ded24
+  image: oxsecurity/megalinter:v9@sha256:ed944524cb36342a3693f5297ab92aef7188beff0a20a396fe9e90b4dcbbacfb
   tags:
     - docker
     - linux
