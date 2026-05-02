@@ -2,7 +2,7 @@
 # chameleon-ci / semantic-release — Build & Publish
 #
 # Workflow:
-#   feature/* / claude/*  → lint + build + smoke-test + trivy
+#   feature/* / claude/*  → lint + build + smoke-test + trivy (→ PR-Beschreibung)
 #   main (nach Merge)     → + release (semantic-release → semver + Docker push)
 #
 # Docker-Tags:
@@ -82,6 +82,21 @@ jobs:
           docker tag "${{ env.IMAGE }}:test" \
             "tcwlab/forgejo-build:semantic-release-${{ github.sha }}"
           docker push "tcwlab/forgejo-build:semantic-release-${{ github.sha }}"
+
+  security:
+    name: Trivy Security Scan
+    runs-on: ubuntu-22.04
+    needs: [build-test]
+    env:
+      DOCKER_HOST: tcp://docker-in-docker:2375
+    steps:
+      - name: Install Docker CLI
+        run: |
+          curl -fsSL \
+            "https://download.docker.com/linux/static/stable/x86_64/docker-27.3.1.tgz" \
+            -o /tmp/docker.tgz
+          tar xzf /tmp/docker.tgz --strip-components=1 -C /usr/local/bin docker/docker
+
       - name: Trivy Scan
         run: |
           docker run --rm \
@@ -89,12 +104,95 @@ jobs:
             -e TRIVY_PASSWORD="${{ secrets.DOCKERHUB_TOKEN }}" \
             tcwlab/trivy:0.70.0 image \
             --exit-code 0 --severity HIGH,CRITICAL --ignore-unfixed --format table \
-            "tcwlab/forgejo-build:semantic-release-${{ github.sha }}"
+            "tcwlab/forgejo-build:semantic-release-${{ github.sha }}" \
+            2>&1 | tee /tmp/trivy-report.txt
+
+      - name: PR-Beschreibung mit Trivy-Ergebnis aktualisieren
+        env:
+          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_BRANCH: ${{ github.head_ref || github.ref_name }}
+          REPO: ${{ github.repository }}
+        run: |
+          python3 << 'EOF'
+          import os, json, re, urllib.request, urllib.error
+
+          token    = os.environ["FORGEJO_TOKEN"]
+          repo     = os.environ["REPO"]
+          event    = os.environ["GITHUB_EVENT_NAME"]
+          base_url = "https://git.mon.k8b.co/api/v1"
+          headers  = {"Authorization": f"token {token}", "Content-Type": "application/json"}
+
+          def get(url):
+              req = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(req) as r:
+                  return json.loads(r.read())
+
+          def patch(url, body):
+              req = urllib.request.Request(
+                  url, data=json.dumps(body).encode(), headers=headers, method="PATCH"
+              )
+              with urllib.request.urlopen(req) as r:
+                  return r.status
+
+          # PR-Nummer ermitteln
+          pr_number = None
+          if event == "pull_request":
+              pr_number = os.environ["PR_NUMBER"]
+          else:
+              branch = os.environ["HEAD_BRANCH"]
+              try:
+                  pulls = get(f"{base_url}/repos/{repo}/pulls?state=open&limit=50")
+                  for pr in pulls:
+                      if pr.get("head", {}).get("ref") == branch:
+                          pr_number = str(pr["number"])
+                          break
+              except urllib.error.URLError as e:
+                  print(f"PR-Suche fehlgeschlagen: {e}")
+
+          if not pr_number:
+              print("Kein offener PR gefunden — PR-Beschreibung wird nicht aktualisiert")
+              exit(0)
+
+          # Trivy-Report einlesen
+          with open("/tmp/trivy-report.txt") as f:
+              trivy_output = f.read().strip()
+
+          # Aktuellen PR-Body abrufen
+          pr_data      = get(f"{base_url}/repos/{repo}/pulls/{pr_number}")
+          current_body = pr_data.get("body", "") or ""
+
+          # Trivy-Block aufbauen
+          start = "<!-- trivy-scan-chameleon-ci-start -->"
+          end   = "<!-- trivy-scan-chameleon-ci-end -->"
+          block = (
+              f"{start}\n"
+              f"**\U0001f512 Security Scan (Trivy) — HIGH & CRITICAL, nur behebbare Schwachstellen**\n\n"
+              f"```\n{trivy_output}\n```\n"
+              f"{end}"
+          )
+
+          # Ersetzen oder oben voranstellen
+          if start in current_body:
+              new_body = re.sub(
+                  re.escape(start) + r".*?" + re.escape(end),
+                  block,
+                  current_body,
+                  flags=re.DOTALL
+              )
+          else:
+              new_body = block + ("\n\n" + current_body if current_body else "")
+
+          # PATCH PR-Beschreibung
+          status = patch(f"{base_url}/repos/{repo}/pulls/{pr_number}", {"body": new_body})
+          print(f"PR #{pr_number}: Beschreibung aktualisiert (HTTP {status})")
+          EOF
 
   release:
     name: Release — Multi-Arch Push
     runs-on: ubuntu-22.04
-    needs: [lint, build-test]
+    needs: [lint, security]
     if: github.ref == 'refs/heads/main'
     env:
       DOCKER_HOST: tcp://docker-in-docker:2375
