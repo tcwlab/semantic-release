@@ -1,0 +1,11 @@
+branches:
+  - main
+
+plugins:
+  - "@semantic-release/commit-analyzer"
+  - "@semantic-release/release-notes-generator"
+  - - "@semantic-release/github"
+    - apiUrl: "https://git.mon.k8b.co/api/v1/"
+      baseUrl: "https://git.mon.k8b.co"
+  - - "@semantic-release/exec"
+    - verifyReleaseCmd: "echo ${nextRelease.version} > .NEXT_RELEASE_VERSION"

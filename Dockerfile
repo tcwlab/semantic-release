@@ -1,0 +1,44 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# chameleon-ci / semantic-release
+#
+# semantic-release mit Forgejo-Support via @semantic-release/github.
+# Forgejo hat eine GitHub-kompatible API — Release-Erstellung und Tag-Push
+# funktionieren direkt mit diesen Env-Vars:
+#
+#   GH_TOKEN        → Forgejo API-Token (secrets.FORGEJO_TOKEN)
+#   GITHUB_URL      → https://git.mon.k8b.co
+#   GITHUB_API_URL  → https://git.mon.k8b.co/api/v1/
+#
+# Enthaltene Plugins:
+#   @semantic-release/commit-analyzer         → Conventional-Commits → SemVer
+#   @semantic-release/release-notes-generator → Changelog aus Commits
+#   @semantic-release/github                  → Forgejo Release + Tag
+#   @semantic-release/exec                    → Version in Datei schreiben
+# ─────────────────────────────────────────────────────────────────────────────
+
+FROM node:lts-alpine AS base
+RUN apk add --no-cache \
+    git \
+    git-lfs \
+    ca-certificates \
+    curl \
+    bash \
+    && apk upgrade \
+    && rm -rf /var/cache/apk/*
+
+FROM base AS deps
+RUN npm install -g \
+    semantic-release \
+    @semantic-release/commit-analyzer \
+    @semantic-release/release-notes-generator \
+    @semantic-release/github \
+    @semantic-release/exec \
+    && npm cache clean --force
+
+FROM base AS release
+COPY --from=deps /usr/local/lib/node_modules /usr/local/lib/node_modules
+RUN ln -s /usr/local/lib/node_modules/semantic-release/bin/semantic-release.js \
+          /usr/local/bin/semantic-release
+RUN addgroup -S semrel && adduser -S semrel -G semrel
+USER semrel
+CMD ["semantic-release", "--help"]
