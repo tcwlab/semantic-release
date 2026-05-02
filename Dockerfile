@@ -42,7 +42,7 @@ RUN npm install -g \
     && find /usr/local/lib/node_modules -mindepth 3 \
          -name "picomatch" -type d \
          -not -path "/usr/local/lib/node_modules/picomatch" \
-         -print0 | xargs -0 rm -rf \
+         -exec rm -rf {} + \
     && npm cache clean --force
 
 FROM base AS release
