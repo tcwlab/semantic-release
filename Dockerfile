@@ -39,6 +39,10 @@ RUN npm install -g \
     @semantic-release/github \
     @semantic-release/exec \
     picomatch@4.0.4 \
+    && find /usr/local/lib/node_modules -mindepth 3 \
+         -name "picomatch" -type d \
+         -not -path "/usr/local/lib/node_modules/picomatch" \
+         -print0 | xargs -0 rm -rf \
     && npm cache clean --force
 
 FROM base AS release
