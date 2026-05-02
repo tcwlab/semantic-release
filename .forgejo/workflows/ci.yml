@@ -100,13 +100,13 @@ jobs:
       - name: Trivy Scan (JSON)
         run: |
           docker run --rm \
-            -v /tmp:/output \
             -e TRIVY_USERNAME="${{ secrets.DOCKERHUB_USERNAME }}" \
             -e TRIVY_PASSWORD="${{ secrets.DOCKERHUB_TOKEN }}" \
             tcwlab/trivy:0.70.0 image \
             --exit-code 0 --severity HIGH,CRITICAL --ignore-unfixed \
-            --format json --output /output/trivy-report.json \
-            "tcwlab/forgejo-build:semantic-release-${{ github.sha }}"
+            --format json \
+            "tcwlab/forgejo-build:semantic-release-${{ github.sha }}" \
+            > /tmp/trivy-report.json
 
       - name: PR-Beschreibung mit Trivy-Ergebnis aktualisieren
         env:
