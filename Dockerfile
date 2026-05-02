@@ -14,7 +14,11 @@
 #   @semantic-release/release-notes-generator → Changelog aus Commits
 #   @semantic-release/github                  → Forgejo Release + Tag
 #   @semantic-release/exec                    → Version in Datei schreiben
+#
+# Docker-Tags: tcwlab/semantic-release:<semrel-version>-<wrapper-semver>
 # ─────────────────────────────────────────────────────────────────────────────
+
+ARG SEMANTIC_RELEASE_VERSION=25.0.3
 
 FROM node:lts-alpine AS base
 RUN apk add --no-cache \
@@ -27,12 +31,14 @@ RUN apk add --no-cache \
     && rm -rf /var/cache/apk/*
 
 FROM base AS deps
+ARG SEMANTIC_RELEASE_VERSION
 RUN npm install -g \
-    semantic-release \
+    semantic-release@${SEMANTIC_RELEASE_VERSION} \
     @semantic-release/commit-analyzer \
     @semantic-release/release-notes-generator \
     @semantic-release/github \
     @semantic-release/exec \
+    picomatch@4.0.4 \
     && npm cache clean --force
 
 FROM base AS release

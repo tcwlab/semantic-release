@@ -6,8 +6,9 @@
 #   main (nach Merge)     → + release (semantic-release → semver + Docker push)
 #
 # Docker-Tags:
-#   tcwlab/semantic-release:<semver>   immutable
-#   tcwlab/semantic-release:latest     float
+#   tcwlab/semantic-release:<semrel-version>-<wrapper-semver>   immutable
+#   tcwlab/semantic-release:<semrel-version>                    float
+#   tcwlab/semantic-release:latest                              float
 # ─────────────────────────────────────────────────────────────────────────────
 
 name: ci
@@ -124,14 +125,16 @@ jobs:
             -p @semantic-release/exec \
             semantic-release
 
-      - name: Release-Version prüfen
+      - name: Versionen extrahieren
         id: semrel
         run: |
+          TOOL_VER=$(grep '^ARG SEMANTIC_RELEASE_VERSION=' Dockerfile | head -1 | cut -d= -f2)
+          echo "tool_version=${TOOL_VER}" >> "$GITHUB_OUTPUT"
           if [ -f .NEXT_RELEASE_VERSION ]; then
-            VER=$(cat .NEXT_RELEASE_VERSION)
-            echo "released=true"  >> "$GITHUB_OUTPUT"
-            echo "version=${VER}" >> "$GITHUB_OUTPUT"
-            echo "Release: ${VER}"
+            WRAPPER_VER=$(cat .NEXT_RELEASE_VERSION)
+            echo "released=true"              >> "$GITHUB_OUTPUT"
+            echo "wrapper_version=${WRAPPER_VER}" >> "$GITHUB_OUTPUT"
+            echo "Release: ${TOOL_VER}-${WRAPPER_VER}"
           else
             echo "released=false" >> "$GITHUB_OUTPUT"
             echo "Kein Release (kein feat/fix Commit seit letztem Tag)"
@@ -166,10 +169,13 @@ jobs:
       - name: Build & Push (multi-arch)
         if: steps.semrel.outputs.released == 'true'
         run: |
-          VER="${{ steps.semrel.outputs.version }}"
+          TOOL_VER="${{ steps.semrel.outputs.tool_version }}"
+          WRAPPER_VER="${{ steps.semrel.outputs.wrapper_version }}"
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             --sbom=true --provenance=mode=max \
-            -t "${{ env.IMAGE }}:${VER}" \
+            --build-arg SEMANTIC_RELEASE_VERSION="${TOOL_VER}" \
+            -t "${{ env.IMAGE }}:${TOOL_VER}-${WRAPPER_VER}" \
+            -t "${{ env.IMAGE }}:${TOOL_VER}" \
             -t "${{ env.IMAGE }}:latest" \
             --push .
