@@ -7,5 +7,11 @@ plugins:
   - - "@semantic-release/github"
     - apiUrl: "https://git.mon.k8b.co/api/v1/"
       baseUrl: "https://git.mon.k8b.co"
+      # Forgejo hat keine GraphQL-API — PR/Issue-Kommentare und Labels deaktivieren
+      successComment: false
+      failComment: false
+      failTitle: false
+      labels: false
+      releasedLabels: false
   - - "@semantic-release/exec"
     - verifyReleaseCmd: "echo ${nextRelease.version} > .NEXT_RELEASE_VERSION"
