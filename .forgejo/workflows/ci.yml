@@ -2,7 +2,7 @@
 # chameleon-ci / semantic-release — Build & Publish
 #
 # Workflow:
-#   feature/* / claude/*  → lint + build + smoke-test + trivy
+#   feature/* / claude/*  → lint + build + smoke-test + trivy (→ PR-Beschreibung)
 #   main (nach Merge)     → + release (semantic-release → semver + Docker push)
 #
 # Docker-Tags:
@@ -82,19 +82,156 @@ jobs:
           docker tag "${{ env.IMAGE }}:test" \
             "tcwlab/forgejo-build:semantic-release-${{ github.sha }}"
           docker push "tcwlab/forgejo-build:semantic-release-${{ github.sha }}"
-      - name: Trivy Scan
+
+  security:
+    name: Trivy Security Scan
+    runs-on: ubuntu-22.04
+    needs: [build-test]
+    env:
+      DOCKER_HOST: tcp://docker-in-docker:2375
+    steps:
+      - name: Install Docker CLI
+        run: |
+          curl -fsSL \
+            "https://download.docker.com/linux/static/stable/x86_64/docker-27.3.1.tgz" \
+            -o /tmp/docker.tgz
+          tar xzf /tmp/docker.tgz --strip-components=1 -C /usr/local/bin docker/docker
+
+      - name: Trivy Scan (JSON)
         run: |
           docker run --rm \
             -e TRIVY_USERNAME="${{ secrets.DOCKERHUB_USERNAME }}" \
             -e TRIVY_PASSWORD="${{ secrets.DOCKERHUB_TOKEN }}" \
             tcwlab/trivy:0.70.0 image \
-            --exit-code 0 --severity HIGH,CRITICAL --ignore-unfixed --format table \
-            "tcwlab/forgejo-build:semantic-release-${{ github.sha }}"
+            --exit-code 0 --severity HIGH,CRITICAL --ignore-unfixed \
+            --format json \
+            "tcwlab/forgejo-build:semantic-release-${{ github.sha }}" \
+            > /tmp/trivy-report.json
+
+      - name: PR-Beschreibung mit Trivy-Ergebnis aktualisieren
+        env:
+          FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          HEAD_BRANCH: ${{ github.head_ref || github.ref_name }}
+          REPO: ${{ github.repository }}
+          IMAGE_REF: "tcwlab/forgejo-build:semantic-release-${{ github.sha }}"
+          RUN_DATE: ${{ github.event.head_commit.timestamp || github.event.pull_request.updated_at }}
+        run: |
+          python3 << 'EOF'
+          import os, json, re, urllib.request, urllib.error
+          from datetime import datetime, timezone
+
+          token    = os.environ["FORGEJO_TOKEN"]
+          repo     = os.environ["REPO"]
+          event    = os.environ["GITHUB_EVENT_NAME"]
+          base_url = "https://git.mon.k8b.co/api/v1"
+          headers  = {"Authorization": f"token {token}", "Content-Type": "application/json"}
+
+          def api_get(url):
+              req = urllib.request.Request(url, headers=headers)
+              with urllib.request.urlopen(req) as r:
+                  return json.loads(r.read())
+
+          def api_patch(url, body):
+              req = urllib.request.Request(
+                  url, data=json.dumps(body).encode(), headers=headers, method="PATCH"
+              )
+              with urllib.request.urlopen(req) as r:
+                  return r.status
+
+          # ── PR-Nummer ermitteln ──────────────────────────────────────────
+          pr_number = None
+          if event == "pull_request":
+              pr_number = os.environ["PR_NUMBER"]
+          else:
+              branch = os.environ["HEAD_BRANCH"]
+              try:
+                  pulls = api_get(f"{base_url}/repos/{repo}/pulls?state=open&limit=50")
+                  for pr in pulls:
+                      if pr.get("head", {}).get("ref") == branch:
+                          pr_number = str(pr["number"])
+                          break
+              except urllib.error.URLError as e:
+                  print(f"PR-Suche fehlgeschlagen: {e}")
+
+          if not pr_number:
+              print("Kein offener PR gefunden — PR-Beschreibung wird nicht aktualisiert")
+              exit(0)
+
+          # ── Trivy-JSON einlesen ──────────────────────────────────────────
+          with open("/tmp/trivy-report.json") as f:
+              report = json.load(f)
+
+          severity_icon = {"CRITICAL": "🔴", "HIGH": "🟠"}
+
+          rows = []
+          for result in report.get("Results", []):
+              for vuln in result.get("Vulnerabilities") or []:
+                  sev   = vuln.get("Severity", "")
+                  icon  = severity_icon.get(sev, "⚪")
+                  pkg   = vuln.get("PkgName", "")
+                  inst  = vuln.get("InstalledVersion", "")
+                  fixed = vuln.get("FixedVersion", "") or "—"
+                  cve   = vuln.get("VulnerabilityID", "")
+                  url   = next(
+                      (r for r in vuln.get("References", []) if "nvd.nist.gov" in r),
+                      vuln.get("PrimaryURL", "")
+                  )
+                  cve_link = f"[{cve}]({url})" if url else cve
+                  rows.append((sev, icon, pkg, inst, fixed, cve_link))
+
+          # Sortierung: CRITICAL zuerst, dann HIGH, alphabetisch nach Package
+          order = {"CRITICAL": 0, "HIGH": 1}
+          rows.sort(key=lambda r: (order.get(r[0], 9), r[2]))
+
+          counts = {s: sum(1 for r in rows if r[0] == s) for s in ["CRITICAL", "HIGH"]}
+          total  = sum(counts.values())
+
+          if total == 0:
+              summary = "**✅ Keine HIGH/CRITICAL Schwachstellen gefunden**"
+              table   = ""
+          else:
+              parts   = [f"{counts[s]} {s}" for s in ["CRITICAL", "HIGH"] if counts[s]]
+              summary = f"**⚠️ Security Scan — {', '.join(parts)}** (nur behebbare Schwachstellen)"
+              table   = (
+                  "\n| Severity | Package | Installed | Fixed | CVE |\n"
+                  "|---|---|---|---|---|\n"
+              )
+              for _, icon, pkg, inst, fixed, cve_link in rows:
+                  table += f"| {icon} | `{pkg}` | {inst} | {fixed} | {cve_link} |\n"
+
+          scan_date = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+          image_ref = os.environ["IMAGE_REF"]
+          footer    = f"\n_Scan: `{image_ref}` — {scan_date}_"
+
+          # ── Trivy-Block zusammenbauen ────────────────────────────────────
+          start = "<!-- trivy-scan-chameleon-ci-start -->"
+          end   = "<!-- trivy-scan-chameleon-ci-end -->"
+          block = f"{start}\n{summary}{table}{footer}\n{end}"
+
+          # ── Aktuellen PR-Body holen und Block ersetzen / voranstellen ───
+          pr_data      = api_get(f"{base_url}/repos/{repo}/pulls/{pr_number}")
+          current_body = pr_data.get("body", "") or ""
+
+          if start in current_body:
+              new_body = re.sub(
+                  re.escape(start) + r".*?" + re.escape(end),
+                  block,
+                  current_body,
+                  flags=re.DOTALL
+              )
+          else:
+              new_body = block + ("\n\n" + current_body if current_body else "")
+
+          status = api_patch(f"{base_url}/repos/{repo}/pulls/{pr_number}", {"body": new_body})
+          print(f"PR #{pr_number}: Beschreibung aktualisiert ({total} Findings, HTTP {status})")
+          EOF
 
   release:
     name: Release — Multi-Arch Push
     runs-on: ubuntu-22.04
-    needs: [lint, build-test]
+    needs: [lint, security]
     if: github.ref == 'refs/heads/main'
     env:
       DOCKER_HOST: tcp://docker-in-docker:2375
