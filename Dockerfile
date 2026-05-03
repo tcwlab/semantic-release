@@ -21,6 +21,7 @@
 ARG SEMANTIC_RELEASE_VERSION=25.0.3
 
 FROM node:lts-alpine AS base
+# hadolint ignore=DL3018
 RUN apk add --no-cache \
     git \
     git-lfs \
@@ -33,12 +34,12 @@ RUN apk add --no-cache \
 FROM base AS deps
 ARG SEMANTIC_RELEASE_VERSION
 RUN npm install -g \
-    semantic-release@${SEMANTIC_RELEASE_VERSION} \
-    @semantic-release/commit-analyzer \
-    @semantic-release/release-notes-generator \
-    @semantic-release/github \
-    @semantic-release/exec \
-    picomatch@4.0.4 \
+    "semantic-release@${SEMANTIC_RELEASE_VERSION}" \
+    "@semantic-release/commit-analyzer@13" \
+    "@semantic-release/release-notes-generator@14" \
+    "@semantic-release/github@11" \
+    "@semantic-release/exec@6" \
+    "picomatch@4.0.4" \
     && find /usr/local/lib/node_modules -mindepth 3 \
          -name "picomatch" -type d \
          -not -path "/usr/local/lib/node_modules/picomatch" \
