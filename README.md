@@ -5,7 +5,7 @@ Docker Image mit [semantic-release](https://semantic-release.gitbook.io/) und Fo
 ## Enthaltene Plugins
 
 | Plugin | Zweck |
-|---|---|
+| --- | --- |
 | `@semantic-release/commit-analyzer` | Conventional Commits → SemVer-Typ |
 | `@semantic-release/release-notes-generator` | Changelog aus Commit-History |
 | `@semantic-release/github` | Forgejo Release + Tag (GitHub-kompatible API) |
@@ -44,6 +44,6 @@ plugins:
 ## Docker-Tags
 
 | Tag | Bedeutung |
-|---|---|
+| --- | --- |
 | `tcwlab/semantic-release:1.2.3` | Immutable Release |
 | `tcwlab/semantic-release:latest` | Neueste Version |
