@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# chameleon-ci / semantic-release
+# tcwlab / semantic-release
 #
 # semantic-release mit Forgejo-Support via @semantic-release/github.
 # Forgejo hat eine GitHub-kompatible API — Release-Erstellung und Tag-Push

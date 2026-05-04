@@ -1,6 +1,6 @@
 # tcwlab/semantic-release
 
-Docker Image mit [semantic-release](https://semantic-release.gitbook.io/) und Forgejo-Support für das chameleon-ci Ökosystem.
+Docker Image mit [semantic-release](https://semantic-release.gitbook.io/) und Forgejo-Support für das tcwlab Ökosystem.
 
 ## Enthaltene Plugins
 

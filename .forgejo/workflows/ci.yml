@@ -1,5 +1,5 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# chameleon-ci / semantic-release — Build & Publish
+# tcwlab / semantic-release — Build & Publish
 #
 # Workflow:
 #   feature/* / claude/*  → lint + build + smoke-test + trivy (→ PR-Kommentar)
