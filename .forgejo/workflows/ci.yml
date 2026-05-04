@@ -2,10 +2,10 @@
 # tcwlab / semantic-release — Build & Publish
 #
 # Workflow:
-#   feature/* / claude/*  → lint + build + smoke-test + trivy (→ PR-Kommentar)
-#   main (nach Merge)     → + release (semantic-release → semver + Docker push)
+#   feature/* / claude/*  → lint + build + smoke-test + trivy (→ PR comment)
+#   main (after merge)    → + release (semantic-release → semver + Docker push)
 #
-# Docker-Tags:
+# Docker tags:
 #   tcwlab/semantic-release:<semrel-version>-<wrapper-semver>   immutable
 #   tcwlab/semantic-release:<semrel-version>                    float
 #   tcwlab/semantic-release:latest                              float
@@ -54,7 +54,7 @@ jobs:
           LINT_EXIT="${PIPESTATUS[0]}"
           exit "${LINT_EXIT}"
 
-      - name: Betterlint-Ergebnis als PR-Kommentar
+      - name: Post betterlint results as PR comment
         if: always()
         env:
           FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
@@ -103,17 +103,17 @@ jobs:
                           pr_number = str(pr["number"])
                           break
               except urllib.error.URLError as e:
-                  print(f"PR-Suche fehlgeschlagen: {e}")
+                  print(f"PR lookup failed: {e}")
 
           if not pr_number:
-              print("Kein offener PR — Kommentar wird nicht gepostet")
+              print("No open PR — comment will not be posted")
               raise SystemExit(0)
 
           try:
               with open("/tmp/betterlint-report.md") as f:
                   report = f.read().strip()
           except FileNotFoundError:
-              report = "**⚠️ betterlint-Report nicht gefunden**"
+              report = "**⚠️ betterlint report not found**"
 
           scan_date = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
           comment   = f"{MARKER}\n{report}\n\n_Scan: `{os.environ['IMAGE_REF']}` — {scan_date}_"
@@ -135,20 +135,20 @@ jobs:
           if existing_id:
               try:
                   status = patch(f"{api}/repos/{repo}/issues/comments/{existing_id}", {"body": comment})
-                  print(f"PR #{pr_number}: Betterlint-Kommentar aktualisiert (HTTP {status})")
+                  print(f"PR #{pr_number}: betterlint comment updated (HTTP {status})")
               except urllib.error.HTTPError as e:
                   if e.code >= 500:
-                      print(f"PATCH fehlgeschlagen ({e.code}) — erstelle neuen Kommentar")
+                      print(f"PATCH failed ({e.code}) — creating new comment")
                       status = post(f"{api}/repos/{repo}/issues/{pr_number}/comments", {"body": comment})
-                      print(f"PR #{pr_number}: Betterlint-Kommentar erstellt (HTTP {status})")
+                      print(f"PR #{pr_number}: betterlint comment created (HTTP {status})")
                   else:
                       raise
           else:
               status = post(f"{api}/repos/{repo}/issues/{pr_number}/comments", {"body": comment})
-              print(f"PR #{pr_number}: Betterlint-Kommentar erstellt (HTTP {status})")
+              print(f"PR #{pr_number}: betterlint comment created (HTTP {status})")
           EOF
   build-test:
-    name: Build & Smoke-Test
+    name: Build & Smoke Test
     runs-on: ubuntu-22.04
     container:
       image: tcwlab/buildx:0.33.0
@@ -167,22 +167,22 @@ jobs:
           git checkout FETCH_HEAD
       - name: Build (amd64)
         run: docker build -t "${{ env.IMAGE }}:test" .
-      - name: Smoke-Test
+      - name: Smoke test
         run: |
           docker run --rm "${{ env.IMAGE }}:test" semantic-release --version
           docker run --rm "${{ env.IMAGE }}:test" semantic-release --help | grep -q "analyze-commits"
-      - name: Docker Hub Login
+      - name: Docker Hub login
         run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" \
             | docker login --username "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
-      - name: Push zu Staging
+      - name: Push to staging
         run: |
           docker tag "${{ env.IMAGE }}:test" \
             "tcwlab/forgejo-build:semantic-release-${{ github.sha }}"
           docker push "tcwlab/forgejo-build:semantic-release-${{ github.sha }}"
 
   security:
-    name: Trivy Security Scan
+    name: Trivy security scan
     runs-on: ubuntu-22.04
     needs: [build-test]
     env:
@@ -195,7 +195,7 @@ jobs:
             -o /tmp/docker.tgz
           tar xzf /tmp/docker.tgz --strip-components=1 -C /usr/local/bin docker/docker
 
-      - name: Trivy Scan (JSON)
+      - name: Trivy scan (JSON)
         run: |
           docker run --rm \
             -e TRIVY_USERNAME="${{ secrets.DOCKERHUB_USERNAME }}" \
@@ -206,7 +206,7 @@ jobs:
             "tcwlab/forgejo-build:semantic-release-${{ github.sha }}" \
             > /tmp/trivy-report.json
 
-      - name: Trivy-Ergebnis als PR-Kommentar
+      - name: Post Trivy results as PR comment
         env:
           FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
@@ -244,7 +244,7 @@ jobs:
               with urllib.request.urlopen(req) as r:
                   return r.status
 
-          # PR-Nummer ermitteln
+          # Determine PR number
           pr_number = None
           if event == "pull_request":
               pr_number = os.environ["PR_NUMBER"]
@@ -256,13 +256,13 @@ jobs:
                           pr_number = str(pr["number"])
                           break
               except urllib.error.URLError as e:
-                  print(f"PR-Suche fehlgeschlagen: {e}")
+                  print(f"PR lookup failed: {e}")
 
           if not pr_number:
-              print("Kein offener PR — Kommentar wird nicht gepostet")
+              print("No open PR — comment will not be posted")
               raise SystemExit(0)
 
-          # Report aufbauen
+          # Build report
           with open("/tmp/trivy-report.json") as f:
               report = json.load(f)
 
@@ -286,10 +286,10 @@ jobs:
           total  = sum(counts.values())
 
           if total == 0:
-              body = "**✅ Security Scan — keine HIGH/CRITICAL Schwachstellen**"
+              body = "**✅ Security scan — no HIGH/CRITICAL vulnerabilities**"
           else:
               parts = [f"{counts[s]} {s}" for s in ["CRITICAL", "HIGH"] if counts[s]]
-              body  = f"**⚠️ Security Scan — {', '.join(parts)}** (nur behebbare Schwachstellen)\n\n"
+              body  = f"**⚠️ Security scan — {', '.join(parts)}** (only fixable vulnerabilities)\n\n"
               body += "| Severity | Package | Installed | Fixed | CVE |\n"
               body += "| --- | --- | --- | --- | --- |\n"
               for _, ico, pkg, inst, fixed, cve_link in rows:
@@ -298,12 +298,12 @@ jobs:
           scan_date = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
           comment   = (
               f"{MARKER}\n{body}\n\n"
-              f"_Gescannt: `{os.environ['SCANNED_IMAGE']}` "
+              f"_Scanned: `{os.environ['SCANNED_IMAGE']}` "
               f"· Tool: `{os.environ['TRIVY_IMAGE']}` "
               f"· {scan_date}_"
           )
 
-          # Vorhandenen Kommentar suchen (seitenweise, max 200)
+          # Find existing comment (paged, max 200)
           existing_id = None
           page = 1
           while True:
@@ -321,21 +321,21 @@ jobs:
           if existing_id:
               try:
                   status = patch(f"{api}/repos/{repo}/issues/comments/{existing_id}", {"body": comment})
-                  print(f"PR #{pr_number}: Trivy-Kommentar aktualisiert (HTTP {status})")
+                  print(f"PR #{pr_number}: Trivy comment updated (HTTP {status})")
               except urllib.error.HTTPError as e:
                   if e.code >= 500:
-                      print(f"PATCH fehlgeschlagen ({e.code}) — erstelle neuen Kommentar")
+                      print(f"PATCH failed ({e.code}) — creating new comment")
                       status = post(f"{api}/repos/{repo}/issues/{pr_number}/comments", {"body": comment})
-                      print(f"PR #{pr_number}: Trivy-Kommentar erstellt (HTTP {status})")
+                      print(f"PR #{pr_number}: Trivy comment created (HTTP {status})")
                   else:
                       raise
           else:
               status = post(f"{api}/repos/{repo}/issues/{pr_number}/comments", {"body": comment})
-              print(f"PR #{pr_number}: Trivy-Kommentar erstellt (HTTP {status})")
+              print(f"PR #{pr_number}: Trivy comment created (HTTP {status})")
           EOF
 
   release:
-    name: Release — Multi-Arch Push
+    name: Release — multi-arch push
     runs-on: ubuntu-22.04
     needs: [lint, security]
     if: github.ref == 'refs/heads/main'
@@ -345,7 +345,7 @@ jobs:
       GITHUB_URL: https://git.mon.k8b.co
       GITHUB_API_URL: https://git.mon.k8b.co/api/v1/
     steps:
-      - name: Checkout (volle History für semantic-release)
+      - name: Checkout (full history for semantic-release)
         env:
           GITHUB_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
         run: |
@@ -368,7 +368,7 @@ jobs:
             -p @semantic-release/exec \
             semantic-release
 
-      - name: Versionen extrahieren
+      - name: Extract versions
         id: semrel
         run: |
           TOOL_VER=$(grep '^ARG SEMANTIC_RELEASE_VERSION=' Dockerfile | head -1 | cut -d= -f2)
@@ -380,7 +380,7 @@ jobs:
             echo "Release: ${TOOL_VER}-${WRAPPER_VER}"
           else
             echo "released=false" >> "$GITHUB_OUTPUT"
-            echo "Kein Release (kein feat/fix Commit seit letztem Tag)"
+            echo "No release (no feat/fix commit since last tag)"
           fi
 
       - name: Install Docker CLI + buildx
@@ -396,20 +396,20 @@ jobs:
             -o ~/.docker/cli-plugins/docker-buildx
           chmod +x ~/.docker/cli-plugins/docker-buildx
 
-      - name: QEMU + Buildx-Builder
+      - name: QEMU + buildx builder
         if: steps.semrel.outputs.released == 'true'
         run: |
           docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
           docker buildx create --name multiarch --driver docker-container --use
           docker buildx inspect --bootstrap
 
-      - name: Docker Hub Login
+      - name: Docker Hub login
         if: steps.semrel.outputs.released == 'true'
         run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" \
             | docker login --username "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin
 
-      - name: Build & Push (multi-arch)
+      - name: Build & push (multi-arch)
         if: steps.semrel.outputs.released == 'true'
         run: |
           TOOL_VER="${{ steps.semrel.outputs.tool_version }}"
@@ -422,3 +422,39 @@ jobs:
             -t "${{ env.IMAGE }}:${TOOL_VER}" \
             -t "${{ env.IMAGE }}:latest" \
             --push .
+
+  sync-readme:
+    name: Sync README to Docker Hub
+    runs-on: ubuntu-22.04
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    container:
+      image: alpine:3.23
+    steps:
+      - name: Checkout
+        env:
+          GITHUB_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
+        run: |
+          apk add --no-cache git jq curl ca-certificates
+          git config --global init.defaultBranch main
+          git init .
+          git remote add origin \
+            "https://oauth2:${GITHUB_TOKEN}@git.mon.k8b.co/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_SHA}"
+          git checkout FETCH_HEAD
+
+      - name: Push README to Docker Hub
+        env:
+          DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
+          DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+          REPO: semantic-release
+        run: |
+          set -euo pipefail
+          TOKEN=$(curl -fsS -H "Content-Type: application/json" -X POST \
+            -d "{\"username\":\"$DOCKERHUB_USERNAME\",\"password\":\"$DOCKERHUB_TOKEN\"}" \
+            https://hub.docker.com/v2/users/login/ | jq -r .token)
+          curl -fsS -X PATCH \
+            -H "Authorization: JWT $TOKEN" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n --rawfile body README.md '{full_description: $body}')" \
+            "https://hub.docker.com/v2/repositories/tcwlab/${REPO}/" > /dev/null
+          echo "✓ README synced to hub.docker.com/r/tcwlab/${REPO}"
