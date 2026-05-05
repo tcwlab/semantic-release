@@ -11,7 +11,7 @@
 ## Quick start
 
 ```bash
-docker pull tcwlab/semantic-release:1.0.0
+docker pull tcwlab/semantic-release:latest
 ```
 
 Or as a Forgejo container job:
@@ -22,11 +22,11 @@ release:
   needs: [lint, build]
   if: github.ref == 'refs/heads/main'
   container:
-    image: tcwlab/semantic-release:1.0.0
+    image: tcwlab/semantic-release:latest
   env:
     GH_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
-    GITHUB_URL: https://git.mon.k8b.co
-    GITHUB_API_URL: https://git.mon.k8b.co/api/v1/
+    GITHUB_URL: https://forgejo.example.com
+    GITHUB_API_URL: https://forgejo.example.com/api/v1/
   steps:
     - uses: https://data.forgejo.org/actions/checkout@v4
       with: { fetch-depth: 0 }
@@ -35,16 +35,32 @@ release:
 
 That's it. The image runs `semantic-release` with no additional configuration required, provided you have a `.releaserc` in the repo root.
 
+> Quick-start examples use `:latest` so you can try the image immediately. For
+> production CI pipelines, pin a concrete `<upstream>-<wrapper>` tag — see
+> [Tag pattern](#tag-pattern) below.
+
 ---
 
-## Tags
+## Tag pattern
 
-| Tag | Description |
-|-----|-------------|
-| `1.0.0`, `1.0`, `1` | Concrete SemVer (recommended for production pipelines) |
-| `latest` | Rolling reference; always points at the newest release |
+This image follows a three-tier tag scheme that wraps an upstream version:
 
-**Always pin a concrete version in production.** `latest` is fine for local experiments, but pinning protects your pipeline from a toolchain bump that lands without a PR.
+- `<upstream>` — e.g. `25.0.3`. Tracks the upstream
+  [semantic-release](https://github.com/semantic-release/semantic-release)
+  release this image is built on. Use when you want the freshest
+  wrapper-of-this-upstream and don't care about the wrapper patch level.
+- `<upstream>-<wrapper>` — e.g. `25.0.3-1.0.0`. Pins both the upstream
+  and the tcwlab wrapper version. Use in CI configs where determinism
+  matters more than freshness.
+- `latest` — always points to the latest `<upstream>-<wrapper>`. Use only
+  for ad-hoc local runs.
+
+For the current set of tags, see
+[Docker Hub tags](https://hub.docker.com/r/tcwlab/semantic-release/tags).
+
+**Always pin a concrete `<upstream>-<wrapper>` tag in production.** A bare
+`<upstream>` tag still moves when the wrapper gets a patch; only
+`<upstream>-<wrapper>` is fully immutable.
 
 ---
 
@@ -77,6 +93,8 @@ Base image: `node:lts-alpine`. Default workdir: `/repo`. Default user: `semrel` 
 
 ### Standard release workflow (Forgejo)
 
+Production CI pipeline — pin a concrete `<upstream>-<wrapper>` tag for reproducibility:
+
 ```yaml
 release:
   name: Release
@@ -84,11 +102,11 @@ release:
   needs: [lint, build-test]
   if: github.ref == 'refs/heads/main'
   container:
-    image: tcwlab/semantic-release:1.0.0
+    image: tcwlab/semantic-release:25.0.3-1.0.0
   env:
     GH_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
-    GITHUB_URL: https://git.mon.k8b.co
-    GITHUB_API_URL: https://git.mon.k8b.co/api/v1/
+    GITHUB_URL: https://forgejo.example.com
+    GITHUB_API_URL: https://forgejo.example.com/api/v1/
   steps:
     - uses: https://data.forgejo.org/actions/checkout@v4
       with: { fetch-depth: 0 }
@@ -100,8 +118,8 @@ The key environment variables:
 | Variable | Purpose |
 |----------|---------|
 | `GH_TOKEN` | API token from `secrets.FORGEJO_TOKEN` (used by `@semantic-release/github`) |
-| `GITHUB_URL` | Forgejo instance URL; e.g., `https://git.mon.k8b.co` |
-| `GITHUB_API_URL` | Forgejo API base URL; e.g., `https://git.mon.k8b.co/api/v1/` |
+| `GITHUB_URL` | Forgejo instance URL; e.g., `https://forgejo.example.com` |
+| `GITHUB_API_URL` | Forgejo API base URL; e.g., `https://forgejo.example.com/api/v1/` |
 | `GIT_AUTHOR_NAME` | Committer name for release commits (optional; defaults to `Semantic Release Bot`) |
 | `GIT_AUTHOR_EMAIL` | Committer email for release commits (optional) |
 | `GIT_COMMITTER_NAME` | Alternative to `GIT_AUTHOR_NAME` |
@@ -121,8 +139,8 @@ plugins:
   - "@semantic-release/commit-analyzer"
   - "@semantic-release/release-notes-generator"
   - - "@semantic-release/github"
-    - apiUrl: "https://git.mon.k8b.co/api/v1/"
-      baseUrl: "https://git.mon.k8b.co"
+    - apiUrl: "https://forgejo.example.com/api/v1/"
+      baseUrl: "https://forgejo.example.com"
       # Forgejo does not have GraphQL — disable PR/issue comment features
       successComment: false
       failComment: false
@@ -172,18 +190,15 @@ After semantic-release runs, the verifyReleaseCmd writes the version string (e.g
 
 ## Source, issues, contributing
 
-- **Source (canonical)**: [`git.mon.k8b.co/tcwlab/semantic-release`](https://git.mon.k8b.co/tcwlab/semantic-release)
-- **Source (mirror)**: [`github.com/tcwlab/semantic-release`](https://github.com/tcwlab/semantic-release)
+- **Source**: [`github.com/tcwlab/semantic-release`](https://github.com/tcwlab/semantic-release)
 - **Issues / feature requests**: [`github.com/tcwlab/semantic-release/issues`](https://github.com/tcwlab/semantic-release/issues)
 - **Docker Hub**: [`hub.docker.com/r/tcwlab/semantic-release`](https://hub.docker.com/r/tcwlab/semantic-release)
-
-The Forgejo repo is the source of truth. The GitHub mirror exists so external consumers have a public-facing copy with an issue tracker.
 
 ---
 
 ## Build, supply chain
 
-Every release is built and published by the repo's own [`.forgejo/workflows/ci.yml`](https://git.mon.k8b.co/tcwlab/semantic-release/src/branch/main/.forgejo/workflows/ci.yml) on a Forgejo runner:
+Every release is built and published by the repo's own [`.forgejo/workflows/ci.yml`](https://github.com/tcwlab/semantic-release/blob/main/.forgejo/workflows/ci.yml) on a Forgejo runner:
 
 - Multi-arch build (`linux/amd64`, `linux/arm64`) via `docker buildx` with `--sbom=true --provenance=mode=max`.
 - Trivy vulnerability scan on `HIGH`/`CRITICAL` severity (failures show up as PR comments).

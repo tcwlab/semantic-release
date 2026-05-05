@@ -2,8 +2,8 @@
 
 > **Onboarding handshake:** Read in this order:
 >
-> 1. [`Projects/CLAUDE.md`](https://git.mon.k8b.co/) (global standards)
-> 2. [`tcwlab/CLAUDE.md`](https://git.mon.k8b.co/tcwlab/) (toolchain context)
+> 1. `Projects/CLAUDE.md` (global standards, workspace-local)
+> 2. `tcwlab/CLAUDE.md` (toolchain context, workspace-local)
 > 3. This file (semantic-release-specific details)
 
 ---
@@ -22,7 +22,7 @@ All TCW repos that need SemVer tags and Forgejo releases — effectively, almost
 
 ## What's in it?
 
-[Dockerfile](https://git.mon.k8b.co/tcwlab/semantic-release/src/branch/main/Dockerfile):
+[Dockerfile](https://github.com/tcwlab/semantic-release/blob/main/Dockerfile):
 
 - **Stage 1 — `base`**: `node:lts-alpine` with `apk add git git-lfs ca-certificates curl bash`. `apk upgrade`.
 - **Stage 2 — `deps`**: `npm install -g` of the pinned plugin set:
@@ -99,8 +99,8 @@ release:
     image: tcwlab/semantic-release:1.0.0
   env:
     GH_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
-    GITHUB_URL: https://git.mon.k8b.co
-    GITHUB_API_URL: https://git.mon.k8b.co/api/v1/
+    GITHUB_URL: https://forgejo.example.com
+    GITHUB_API_URL: https://forgejo.example.com/api/v1/
   steps:
     - uses: https://data.forgejo.org/actions/checkout@v4
       with: { fetch-depth: 0 }
@@ -116,8 +116,8 @@ plugins:
   - "@semantic-release/commit-analyzer"
   - "@semantic-release/release-notes-generator"
   - - "@semantic-release/github"
-    - apiUrl: "https://git.mon.k8b.co/api/v1/"
-      baseUrl: "https://git.mon.k8b.co"
+    - apiUrl: "https://forgejo.example.com/api/v1/"
+      baseUrl: "https://forgejo.example.com"
   - - "@semantic-release/exec"
     - verifyReleaseCmd: "echo ${nextRelease.version} > .NEXT_RELEASE_VERSION"
 ```
@@ -131,7 +131,7 @@ plugins:
   - "@semantic-release/commit-analyzer"
   - "@semantic-release/release-notes-generator"
   - - "@saithodev/semantic-release-gitea"
-    - giteaUrl: "https://git.mon.k8b.co"
+    - giteaUrl: "https://forgejo.example.com"
   - "@semantic-release/git"
 ```
 
