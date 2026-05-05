@@ -7,7 +7,7 @@ plugins:
   - - "@semantic-release/github"
     - apiUrl: "https://git.mon.k8b.co/api/v1/"
       baseUrl: "https://git.mon.k8b.co"
-      # Forgejo hat keine GraphQL-API — PR/Issue-Kommentare und Labels deaktivieren
+      # Forgejo has no GraphQL API — disable PR/issue comments and labels
       successComment: false
       failComment: false
       failTitle: false

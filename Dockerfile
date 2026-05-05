@@ -1,21 +1,21 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# chameleon-ci / semantic-release
+# tcwlab / semantic-release
 #
-# semantic-release mit Forgejo-Support via @semantic-release/github.
-# Forgejo hat eine GitHub-kompatible API — Release-Erstellung und Tag-Push
-# funktionieren direkt mit diesen Env-Vars:
+# semantic-release with Forgejo support via @semantic-release/github.
+# Forgejo has a GitHub-compatible API — release creation and tag push
+# work directly with these env vars:
 #
-#   GH_TOKEN        → Forgejo API-Token (secrets.FORGEJO_TOKEN)
+#   GH_TOKEN        → Forgejo API token (secrets.FORGEJO_TOKEN)
 #   GITHUB_URL      → https://git.mon.k8b.co
 #   GITHUB_API_URL  → https://git.mon.k8b.co/api/v1/
 #
-# Enthaltene Plugins:
-#   @semantic-release/commit-analyzer         → Conventional-Commits → SemVer
-#   @semantic-release/release-notes-generator → Changelog aus Commits
-#   @semantic-release/github                  → Forgejo Release + Tag
-#   @semantic-release/exec                    → Version in Datei schreiben
+# Included plugins:
+#   @semantic-release/commit-analyzer         → Conventional Commits → SemVer
+#   @semantic-release/release-notes-generator → Changelog from commits
+#   @semantic-release/github                  → Forgejo release + tag
+#   @semantic-release/exec                    → Write version to file
 #
-# Docker-Tags: tcwlab/semantic-release:<semrel-version>-<wrapper-semver>
+# Docker tags: tcwlab/semantic-release:<semrel-version>-<wrapper-semver>
 # ─────────────────────────────────────────────────────────────────────────────
 
 ARG SEMANTIC_RELEASE_VERSION=25.0.3
