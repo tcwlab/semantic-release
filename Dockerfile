@@ -6,8 +6,8 @@
 # work directly with these env vars:
 #
 #   GH_TOKEN        → Forgejo API token (secrets.FORGEJO_TOKEN)
-#   GITHUB_URL      → https://git.mon.k8b.co
-#   GITHUB_API_URL  → https://git.mon.k8b.co/api/v1/
+#   GITHUB_URL      → https://<your-forgejo-host>          (e.g. https://forgejo.example.com)
+#   GITHUB_API_URL  → https://<your-forgejo-host>/api/v1/  (e.g. https://forgejo.example.com/api/v1/)
 #
 # Included plugins:
 #   @semantic-release/commit-analyzer         → Conventional Commits → SemVer
