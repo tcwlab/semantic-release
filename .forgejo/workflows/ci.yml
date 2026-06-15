@@ -34,7 +34,7 @@ jobs:
     name: Lint
     runs-on: ubuntu-22.04
     container:
-      image: tcwlab/betterlint:latest
+      image: tcwlab/betterlint:2.17.2
     steps:
       - name: Checkout
         env:
@@ -62,7 +62,7 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           HEAD_BRANCH: ${{ github.head_ref || github.ref_name }}
           REPO: ${{ github.repository }}
-          IMAGE_REF: "tcwlab/betterlint:latest"
+          IMAGE_REF: "tcwlab/betterlint:2.17.2"
         run: |
           python3 << 'EOF'
           import os, json, urllib.request, urllib.error
@@ -207,6 +207,7 @@ jobs:
             > /tmp/trivy-report.json
 
       - name: Post Trivy results as PR comment
+        if: always() && github.event_name == 'pull_request'
         env:
           FORGEJO_TOKEN: ${{ secrets.FORGEJO_TOKEN }}
           GITHUB_EVENT_NAME: ${{ github.event_name }}
